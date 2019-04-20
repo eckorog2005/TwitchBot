@@ -7,6 +7,7 @@ using TwitchLib.Client.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using twitchbot.Games.BlackJack;
 
 namespace twitchbot.Bot
 {
@@ -14,8 +15,13 @@ namespace twitchbot.Bot
     public class TwitchBotClient
     {
         private TwitchClient client;
+        private Dictionary<string,BlackJack> blackJackGames;
+
         public TwitchBotClient(string userName, ConnectionCredentials credentials)
         {
+            //make games
+            blackJackGames = new Dictionary<string, BlackJack>();
+
             client = new TwitchClient();
             client.Initialize(credentials, userName);
 
@@ -45,9 +51,48 @@ namespace twitchbot.Bot
         private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
             Console.WriteLine(e.ChatMessage.Message);
+            var userName = e.ChatMessage.Username;
             var message = e.ChatMessage.Message;
             if(message == "!dice"){
-                RollDice(e.ChatMessage.Channel,e.ChatMessage.Username);
+                RollDice(e.ChatMessage.Channel,userName);
+            }
+
+            //Blackjack game
+            if(message == "!blackjack"){
+                if(blackJackGames.ContainsKey(userName)){
+                    client.SendMessage(e.ChatMessage.Channel,"You already started a game of blackjack");
+                }else{
+                    var game = new BlackJack();
+                    game.NewGame();
+                    var playerHand = game.GetHand(true);
+                    var dealerHand = game.GetHand(false);
+                    blackJackGames.Add(userName, game);
+                    client.SendMessage(e.ChatMessage.Channel, $"BlackJack started - {userName} Hand : {playerHand.handValue}, Have Ace : {playerHand.hasAce}, Dealer's Hand : {dealerHand.handValue}.  Enter !hit or !stay");
+                }
+            }
+            if(message == "!stay"){
+                if(!blackJackGames.ContainsKey(userName)){
+                    client.SendMessage(e.ChatMessage.Channel, $"{userName} to start a game of blackjack by using the !blackjack command");
+                }else{
+                    var game = blackJackGames.GetValueOrDefault(userName);
+                    game.DealerTurn();
+                    var playerHand = game.GetHand(true);
+                    var dealerHand = game.GetHand(false);
+                    var gameMessage = game.ScoreGame() ? $"{userName} Win" : $"{userName} Lose";
+                    blackJackGames.Remove(userName);
+                    client.SendMessage(e.ChatMessage.Channel, $"{gameMessage} - {userName} Hand : {playerHand.handValue}, Have Ace : {playerHand.hasAce}, Dealer's Hand : {dealerHand.handValue}.  Enter !blackjack to play again");
+
+                }
+            }
+            if(message == "!hit"){
+                if(!blackJackGames.ContainsKey(userName)){
+                    client.SendMessage(e.ChatMessage.Channel, $"{userName} to start a game of blackjack by using the !blackjack command");
+                }else{
+                    var game = blackJackGames.GetValueOrDefault(userName);
+                    var playerHand = game.PlayerHit();
+                    var dealerHand = game.GetHand(false);
+                    client.SendMessage(e.ChatMessage.Channel, $"BlackJack new status - {userName} Hand : {playerHand.handValue}, Have Ace : {playerHand.hasAce}, Dealer's Hand : {dealerHand.handValue}. Enter !hit or !stay");
+                }
             }
         }
 
