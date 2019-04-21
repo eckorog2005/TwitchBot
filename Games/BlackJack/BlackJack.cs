@@ -37,6 +37,7 @@ namespace twitchbot.Games.BlackJack{
         public void DealerTurn(){
             DealCard(false);
 
+            // horrible AI
             if(dealerHand.handValue < 16){
                 DealCard(false);
             }
@@ -50,6 +51,8 @@ namespace twitchbot.Games.BlackJack{
 
         public bool ScoreGame(){
             if(playerHand.handValue > dealerHand.handValue && playerHand.handValue <= 21){
+                return true;
+            }else if(dealerHand.handValue >= 21 && playerHand.handValue <= 21){
                 return true;
             }else{
                 return false;
