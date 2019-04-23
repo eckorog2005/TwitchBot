@@ -2,14 +2,16 @@ using System;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 
+using twitchbot.Games.Helpers;
+
 namespace twitchbot.Games.BlackJack{
     public class BlackJack{
-        private List<int> deck;
+        private Hand deck;
         private Hand dealerHand;
         private Hand playerHand; 
 
         public BlackJack(){
-            deck = new List<int>();
+            deck = new Hand();
             dealerHand = new Hand();
             playerHand = new Hand();
         }
@@ -26,33 +28,36 @@ namespace twitchbot.Games.BlackJack{
         }
 
         public void resetGame(){
-            playerHand.handValue = 0;
-            dealerHand.handValue = 0;
-            playerHand.hasAce = false;
-            dealerHand.hasAce = false;
+            dealerHand = new Hand();
+            playerHand = new Hand();
 
             NewGame();
         }
 
         public void DealerTurn(){
+            //simulate only seeing one dealer card. add card for the second.
             DealCard(false);
 
-            // horrible AI
-            if(dealerHand.handValue < 16){
+            /** 
+                Dealer Rules :
+                    hit if value is less than 17 or soft 17,
+                    else stay on hard 17 or higher
+            */ 
+            while(playerHand.GetHandTotal() < 21 && 
+                    (dealerHand.GetHandTotal() < 17 || 
+                    (dealerHand.GetHandTotal() == 17 && dealerHand.hasAce()))){
                 DealCard(false);
-            }
-            if(dealerHand.handValue > 21 && dealerHand.hasAce){
-                dealerHand.handValue -= 10;
-                if(dealerHand.handValue < 16){
-                    DealCard(false);
-                }
             }
         }
 
         public bool ScoreGame(){
-            if(playerHand.handValue > dealerHand.handValue && playerHand.handValue <= 21){
-                return true;
-            }else if(dealerHand.handValue >= 21 && playerHand.handValue <= 21){
+            var playerScore = playerHand.GetHandTotal();
+            var dealerScore = dealerHand.GetHandTotal();
+            if(playerScore == dealerScore && playerScore <= 21){
+                return false;
+            }
+            if((playerScore > dealerScore && playerScore <= 21) || 
+                    (dealerScore > 21 && playerScore <= 21)){
                 return true;
             }else{
                 return false;
@@ -72,39 +77,35 @@ namespace twitchbot.Games.BlackJack{
             }
         }
 
-        public bool PlayerStay(){
+        public bool PlayerStayed(){
             DealerTurn();
             return ScoreGame();
         }
 
-        private void DealCard(bool isPlayer){
-            RNGCryptoServiceProvider provider = new RNGCryptoServiceProvider();
-            var byteArray = new byte[4];
-            provider.GetBytes(byteArray);
-
-            //convert 4 bytes to an integer
-            var randomInteger = BitConverter.ToUInt16(byteArray, 0);
-            var index = randomInteger % deck.Count;
-            var card = deck[index];
-            deck.Remove(card);
-            var isAce = card == 11;
+        private bool DealCard(bool isPlayer){
+            var index = RandomNumber.RandomInteger(deck.cards.Count);
+            var card = deck.cards[index];
+            deck.cards.Remove(card);
             if(isPlayer){
-                playerHand.handValue += card;
-                playerHand.hasAce = isAce;
+                playerHand.cards.Add(card);
+                if(playerHand.GetHandTotal() > 21){
+                    DealerTurn();
+                    return true;
+                }
             }else{
-                dealerHand.handValue += card;
-                playerHand.hasAce = isAce;
+                dealerHand.cards.Add(card);
             }
+
+            return false;
         }
 
         private void CreateDeck(){
-            deck.Clear();
-            for(var i = 2; i < 12; i++){
-                var amount = 4;
-                if(i == 10) 
-                    amount = 16;
-                for(var j = 0; j < amount; j++){
-                    deck.Add(i);
+            deck.cards.Clear();
+            var cardSuits = Enum.GetValues(typeof(CardSuit));
+            var cardValues = Enum.GetValues(typeof(CardValue));
+            foreach(var value in cardValues){
+                foreach(var suit in cardSuits){
+                    deck.cards.Add(new Card((CardValue)value, (CardSuit)suit));
                 }
             }
         }

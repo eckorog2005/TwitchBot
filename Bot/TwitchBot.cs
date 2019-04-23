@@ -13,7 +13,7 @@ namespace twitchbot.Bot
 
     public class TwitchBot : IBot
     {
-        private Dictionary<string, TwitchBotClient> clients;
+        private TwitchBotClient client;
         private ConnectionCredentials credentials;
 
         public TwitchBot(IConfiguration iConfig)
@@ -21,30 +21,21 @@ namespace twitchbot.Bot
             var botName = iConfig.GetValue<string>("username");
             var token = iConfig.GetValue<string>("accessToken");
             credentials = new ConnectionCredentials(botName, token);
-            clients = new Dictionary<string, TwitchBotClient>();
+            client = new TwitchBotClient(credentials);
         }
 
-        public void AddClient(string userName){
-            var client = new TwitchBotClient(userName, credentials);
-            clients.Add(userName, client);
+        public void JoinChannel(string userName){
+            client.JoinChannel(userName);
         }
 
-        public void DisconnectClient(string userName){
-            var client = GetClient(userName);
+        public void DisconnectClient(){
             if(client != null){
                 client.Disconnect();
             }
         }
 
-        public void RemoveClient(string userName){
-            DisconnectClient(userName);
-            clients.Remove(userName);
-        }
-
-        private TwitchBotClient GetClient(string userName){
-            TwitchBotClient client;
-            clients.TryGetValue(userName, out client);
-            return client;
+        public void LeaveChannel(string userName){
+            client.LeaveChannel(userName);
         }
     }
 }

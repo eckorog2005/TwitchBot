@@ -17,13 +17,13 @@ namespace twitchbot.Bot
         private TwitchClient client;
         private Dictionary<string,BlackJack> blackJackGames;
 
-        public TwitchBotClient(string userName, ConnectionCredentials credentials)
+        public TwitchBotClient(ConnectionCredentials credentials)
         {
             //make games
             blackJackGames = new Dictionary<string, BlackJack>();
 
             client = new TwitchClient();
-            client.Initialize(credentials, userName);
+            client.Initialize(credentials);
 
             client.OnLog += Client_OnLog;
             client.OnMessageReceived += Client_OnMessageReceived;
@@ -36,6 +36,14 @@ namespace twitchbot.Bot
 
         public void Disconnect(){
             client.Disconnect();
+        }
+
+        public void JoinChannel(string userName){
+            client.JoinChannel(userName);
+        }
+
+        public void LeaveChannel(String userName){
+            client.LeaveChannel(userName);
         }
 
         private void Client_OnLog(object sender, OnLogArgs e)
@@ -67,7 +75,7 @@ namespace twitchbot.Bot
                     var playerHand = game.GetHand(true);
                     var dealerHand = game.GetHand(false);
                     blackJackGames.Add(userName, game);
-                    client.SendMessage(e.ChatMessage.Channel, $"BlackJack started - {userName} Hand : {playerHand.handValue}, Have Ace : {playerHand.hasAce}, Dealer's Hand : {dealerHand.handValue}.  Enter !hit or !stay");
+                    client.SendMessage(e.ChatMessage.Channel, $"BlackJack started - {userName} Hand : {playerHand.ToString()}, Dealer's Hand : {dealerHand.ToString()}.  Enter !hit or !stay");
                 }
             }
             if(message == "!stay"){
@@ -76,12 +84,7 @@ namespace twitchbot.Bot
                 }else{
                     var game = blackJackGames.GetValueOrDefault(userName);
                     game.DealerTurn();
-                    var playerHand = game.GetHand(true);
-                    var dealerHand = game.GetHand(false);
-                    var gameMessage = game.ScoreGame() ? $"{userName} Win" : $"{userName} Lose";
-                    blackJackGames.Remove(userName);
-                    client.SendMessage(e.ChatMessage.Channel, $"{gameMessage} - {userName} Hand : {playerHand.handValue}, Have Ace : {playerHand.hasAce}, Dealer's Hand : {dealerHand.handValue}.  Enter !blackjack to play again");
-
+                    EndBlackJack(game, userName, e.ChatMessage.Channel);
                 }
             }
             if(message == "!hit"){
@@ -91,7 +94,12 @@ namespace twitchbot.Bot
                     var game = blackJackGames.GetValueOrDefault(userName);
                     var playerHand = game.PlayerHit();
                     var dealerHand = game.GetHand(false);
-                    client.SendMessage(e.ChatMessage.Channel, $"BlackJack new status - {userName} Hand : {playerHand.handValue}, Have Ace : {playerHand.hasAce}, Dealer's Hand : {dealerHand.handValue}. Enter !hit or !stay");
+
+                    if(playerHand.GetHandTotal() > 21){
+                         EndBlackJack(game, userName, e.ChatMessage.Channel);
+                    }else{
+                        client.SendMessage(e.ChatMessage.Channel, $"BlackJack new status - {userName} Hand : {playerHand.ToString()}, Dealer's Hand : {dealerHand.ToString()}. Enter !hit or !stay");
+                    }
                 }
             }
         }
@@ -119,6 +127,15 @@ namespace twitchbot.Bot
             var randomInteger = BitConverter.ToUInt32(byteArray, 0);
             var diceValue = randomInteger % 6;
             client.SendMessage(channel, $"{username} roll is a {diceValue}");
+        }
+
+        private void EndBlackJack(BlackJack game, string userName, string channel){
+            var playerHand = game.GetHand(true);
+            var dealerHand = game.GetHand(false);
+            var gameMessage = game.ScoreGame() ? $"{userName} Win" : $"{userName} Lose";
+            blackJackGames.Remove(userName);
+            client.SendMessage(channel, $"{gameMessage} - {userName} Hand : {playerHand.ToString()}, Dealer's Hand : {dealerHand.ToString()}.  Enter !blackjack to play again");
+
         }
     }
 }

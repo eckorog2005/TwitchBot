@@ -30,13 +30,13 @@ namespace twitchbot.Controllers
 
         [HttpPost("addUser")]
         public ActionResult<string> AddUser(User user){
-            mBot.AddClient(user.userName);
+            mBot.JoinChannel(user.userName);
             return Ok("user added");
         }
 
         [HttpPost("removeUser")]
         public ActionResult<string> RemoveUser(User user){
-            mBot.RemoveClient(user.userName);
+            mBot.LeaveChannel(user.userName);
             return Ok("user removed");
         }
     }
