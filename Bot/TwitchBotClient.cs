@@ -125,7 +125,7 @@ namespace twitchbot.Bot
 
             //convert 4 bytes to an integer
             var randomInteger = BitConverter.ToUInt32(byteArray, 0);
-            var diceValue = randomInteger % 6;
+            var diceValue = (randomInteger % 6) + 1;
             client.SendMessage(channel, $"{username} roll is a {diceValue}");
         }
 

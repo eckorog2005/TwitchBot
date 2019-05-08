@@ -1,8 +1,8 @@
-GET https://localhost:5001/api/twitchbot HTTP/1.1
+GET http://localhost:5001/api/twitchbot HTTP/1.1
 
 ###
 
-POST https://localhost:5001/api/twitchbot/addUser HTTP/1.1
+POST http://localhost:5001/api/twitchbot/addUser HTTP/1.1
 content-type: application/json
 
 {
@@ -11,7 +11,7 @@ content-type: application/json
 
 ###
 
-POST https://localhost:5001/api/twitchbot/removeuser HTTP/1.1
+POST http://localhost:5001/api/twitchbot/removeuser HTTP/1.1
 content-type: application/json
 
 {
