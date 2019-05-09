@@ -1,0 +1,21 @@
+@hostname = http://localhost:5001
+
+GET {{hostname}}/api/twitchbot HTTP/1.1
+
+###
+
+POST {{hostname}}/api/twitchbot/addUser HTTP/1.1
+content-type: application/json
+
+{
+    "userName": "yellow_squirrel"
+}
+
+###
+
+POST {{hostname}}/api/twitchbot/removeuser HTTP/1.1
+content-type: application/json
+
+{
+    "userName": "yellow_squirrel"
+}

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 
-namespace twitchbot.Bot
+namespace Twitchbot.Bot
 {
 
     public class TwitchBot : IBot

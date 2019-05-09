@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace twitchbot.Games.BlackJack{
+namespace Twitchbot.Games.BlackJack{
     public class Hand{
         public IList<Card> cards {get;}
 
@@ -36,7 +36,7 @@ namespace twitchbot.Games.BlackJack{
             return total;
         }
 
-        public bool hasAce(){
+        public bool HasAce(){
             if(cards.FirstOrDefault(card => card.value == CardValue.Ace) != null){
                 return true;
             }
@@ -84,9 +84,9 @@ namespace twitchbot.Games.BlackJack{
                 }else{
                     cardSuit = diamond.ToString();
                 }
-                sb.Append($" {cardValue}{cardSuit} ");
+                sb.Append($"{cardValue}{cardSuit} ");
             }
-            return sb.ToString();
+            return sb.ToString().Trim();
         }
     }
 }

@@ -7,9 +7,9 @@ using TwitchLib.Client.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
-using twitchbot.Games.BlackJack;
+using Twitchbot.Games.BlackJack;
 
-namespace twitchbot.Bot
+namespace Twitchbot.Bot
 {
 
     public class TwitchBotClient

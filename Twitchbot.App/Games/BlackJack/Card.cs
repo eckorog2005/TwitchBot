@@ -1,6 +1,6 @@
 using System;
 
-namespace twitchbot.Games.BlackJack{
+namespace Twitchbot.Games.BlackJack{
     public class Card{
         public CardValue value {get;}
         public CardSuit suit {get;}

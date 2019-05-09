@@ -2,7 +2,7 @@ using System;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 
-namespace twitchbot.Games.Helpers{
+namespace Twitchbot.Games.Helpers{
     public class RandomNumber{
 
         //returns a random number from 0 to max value - 1

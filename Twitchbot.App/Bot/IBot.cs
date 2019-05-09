@@ -1,6 +1,6 @@
 using System;
 
-namespace twitchbot.Bot
+namespace Twitchbot.Bot
 {
     public interface IBot{
         void JoinChannel(string userName);

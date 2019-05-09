@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using twitchbot.Bot;
-using twitchbot.Models;
+using Twitchbot.Bot;
+using Twitchbot.Models;
 
-namespace twitchbot.Controllers
+namespace Twitchbot.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

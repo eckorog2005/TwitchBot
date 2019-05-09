@@ -2,9 +2,9 @@ using System;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 
-using twitchbot.Games.Helpers;
+using Twitchbot.Games.Helpers;
 
-namespace twitchbot.Games.BlackJack{
+namespace Twitchbot.Games.BlackJack{
     public class BlackJack{
         private Hand deck;
         private Hand dealerHand;
@@ -45,7 +45,7 @@ namespace twitchbot.Games.BlackJack{
             */ 
             while(playerHand.GetHandTotal() < 21 && 
                     (dealerHand.GetHandTotal() < 17 || 
-                    (dealerHand.GetHandTotal() == 17 && dealerHand.hasAce()))){
+                    (dealerHand.GetHandTotal() == 17 && dealerHand.HasAce()))){
                 DealCard(false);
             }
         }
