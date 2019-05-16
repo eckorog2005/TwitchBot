@@ -3,10 +3,15 @@ using System.Security.Cryptography;
 using System.Collections.Generic;
 
 namespace Twitchbot.Games.Helpers{
-    public class RandomNumber{
+    public class NumberGenerator : IRandomNumberGenerator{
 
+        public NumberGenerator(){
+
+        }
+
+        
         //returns a random number from 0 to max value - 1
-        public static int RandomInteger(int max){
+        public int RandomNumber(int max){
             RNGCryptoServiceProvider provider = new RNGCryptoServiceProvider();
             var byteArray = new byte[4];
             provider.GetBytes(byteArray);

@@ -17,6 +17,17 @@ namespace Twitchbot.Tests.Games.BlackJack
         private Card jackOfClubs = new Card(CardValue.Jack, CardSuit.Club);
         private Card kingOfClubs = new Card(CardValue.King, CardSuit.Club);
 
+
+        [Fact]
+        public void Hand_Constructor()
+        {
+            var hand = new Hand();
+            Assert.Empty(hand.cards);
+            Assert.Equal(0, hand.GetHandTotal());
+            Assert.False(hand.HasAce());
+            Assert.Equal("", hand.ToString());
+        }
+        
         [Fact]
         public void GetHandTotal_NonFaceCards()
         {
@@ -101,7 +112,7 @@ namespace Twitchbot.Tests.Games.BlackJack
         {
             var hand = new Hand();
             hand.cards.Add(fiveOfClubs);
-            Assert.Equal(hand.ToString(), "5\u2663");
+            Assert.Equal("5\u2663", hand.ToString());
         }
 
         [Fact]
@@ -109,16 +120,17 @@ namespace Twitchbot.Tests.Games.BlackJack
         {
             var hand = new Hand();
             hand.cards.Add(aceOfClubs);
-            Assert.Equal(hand.ToString(), "A\u2663");
+            Assert.Equal("A\u2663", hand.ToString());
         }
 
         [Fact]
         public void ToString_NoCard()
         {
             var hand = new Hand();
-            Assert.Equal(hand.ToString(), "");
+            Assert.Equal("", hand.ToString());
         }
 
+        [Fact]
         public void ToString_AllSuits()
         {
             var hand = new Hand();
@@ -126,16 +138,17 @@ namespace Twitchbot.Tests.Games.BlackJack
             hand.cards.Add(fiveOfDiamonds);
             hand.cards.Add(fiveOfSpades);
             hand.cards.Add(fiveOfHearts);
-            Assert.Equal(hand.ToString(), "5\u2663 5\u2662 5\u2660 5\u2661");
+            Assert.Equal("5\u2663 5\u2662 5\u2660 5\u2661", hand.ToString());
         }
 
+        [Fact]
         public void ToString_AllFace()
         {
             var hand = new Hand();
             hand.cards.Add(jackOfClubs);
             hand.cards.Add(queenOfClubs);
             hand.cards.Add(kingOfClubs);
-            Assert.Equal(hand.ToString(), "J\u2663 Q\u2663 K\u2663");
+            Assert.Equal("J\u2663 Q\u2663 K\u2663", hand.ToString());
         }
     }
 }

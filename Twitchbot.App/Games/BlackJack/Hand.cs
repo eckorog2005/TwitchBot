@@ -24,7 +24,8 @@ namespace Twitchbot.Games.BlackJack{
                         numberOfAcesMax++;
                     }
                 }else{
-                    total += (int) card.value;
+                    var value = FindCardValue(card.value);
+                    total += value;
                 }
             }
             if(total + numberOfAcesMax <= 21){
@@ -58,14 +59,14 @@ namespace Twitchbot.Games.BlackJack{
                 
                 if(cardValueEnum == CardValue.Ace){
                     cardValue = "A";
-                }else if(((int)cardValueEnum) == 10){
+                }else if(((int)cardValueEnum) > 10){
                     if(cardValueEnum == CardValue.Jack){
                         cardValue = "J";
                     }
-                    if(cardValueEnum == CardValue.Queen){
+                    else if(cardValueEnum == CardValue.Queen){
                         cardValue = "Q";
                     }
-                    if(cardValueEnum == CardValue.King){
+                    else if(cardValueEnum == CardValue.King){
                         cardValue = "K";
                     }
                     else{
@@ -87,6 +88,15 @@ namespace Twitchbot.Games.BlackJack{
                 sb.Append($"{cardValue}{cardSuit} ");
             }
             return sb.ToString().Trim();
+        }
+
+        private int FindCardValue(CardValue card){
+            var cardValue = 10;
+            var numberValue = (int)card;
+            if(numberValue < 10){
+                cardValue = numberValue;
+            }
+            return cardValue;
         }
     }
 }

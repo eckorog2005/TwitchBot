@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 using Twitchbot.Games.BlackJack;
+using Twitchbot.Games.Helpers;
 
 namespace Twitchbot.Bot
 {
@@ -15,13 +16,11 @@ namespace Twitchbot.Bot
     public class TwitchBotClient
     {
         private TwitchClient client;
-        private Dictionary<string,BlackJack> blackJackGames;
+
+        private List<IBotModule> modules;
 
         public TwitchBotClient(ConnectionCredentials credentials)
         {
-            //make games
-            blackJackGames = new Dictionary<string, BlackJack>();
-
             client = new TwitchClient();
             client.Initialize(credentials);
 
@@ -32,6 +31,12 @@ namespace Twitchbot.Bot
             client.OnConnected += Client_OnConnected;
 
             client.Connect();
+
+            modules = new List<IBotModule>();
+
+            //add modules the crappy way for now
+            modules.Add(new BlackJackModule());
+            modules.Add(new DiceModule());
         }
 
         public void Disconnect(){
@@ -56,50 +61,16 @@ namespace Twitchbot.Bot
             Console.WriteLine($"Connected to {e.AutoJoinChannel}");
         }
 
-        private void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
+        private async void Client_OnMessageReceived(object sender, OnMessageReceivedArgs e)
         {
             Console.WriteLine(e.ChatMessage.Message);
             var userName = e.ChatMessage.Username;
             var message = e.ChatMessage.Message;
-            if(message == "!dice"){
-                RollDice(e.ChatMessage.Channel,userName);
-            }
 
-            //Blackjack game
-            if(message == "!blackjack"){
-                if(blackJackGames.ContainsKey(userName)){
-                    client.SendMessage(e.ChatMessage.Channel,"You already started a game of blackjack");
-                }else{
-                    var game = new BlackJack();
-                    game.NewGame();
-                    var playerHand = game.GetHand(true);
-                    var dealerHand = game.GetHand(false);
-                    blackJackGames.Add(userName, game);
-                    client.SendMessage(e.ChatMessage.Channel, $"BlackJack started - {userName} Hand : {playerHand.ToString()}, Dealer's Hand : {dealerHand.ToString()}.  Enter !hit or !stay");
-                }
-            }
-            if(message == "!stay"){
-                if(!blackJackGames.ContainsKey(userName)){
-                    client.SendMessage(e.ChatMessage.Channel, $"{userName} to start a game of blackjack by using the !blackjack command");
-                }else{
-                    var game = blackJackGames.GetValueOrDefault(userName);
-                    game.DealerTurn();
-                    EndBlackJack(game, userName, e.ChatMessage.Channel);
-                }
-            }
-            if(message == "!hit"){
-                if(!blackJackGames.ContainsKey(userName)){
-                    client.SendMessage(e.ChatMessage.Channel, $"{userName} to start a game of blackjack by using the !blackjack command");
-                }else{
-                    var game = blackJackGames.GetValueOrDefault(userName);
-                    var playerHand = game.PlayerHit();
-                    var dealerHand = game.GetHand(false);
-
-                    if(playerHand.GetHandTotal() > 21){
-                         EndBlackJack(game, userName, e.ChatMessage.Channel);
-                    }else{
-                        client.SendMessage(e.ChatMessage.Channel, $"BlackJack new status - {userName} Hand : {playerHand.ToString()}, Dealer's Hand : {dealerHand.ToString()}. Enter !hit or !stay");
-                    }
+            foreach(var module in modules){
+                var handled = await module.ExecuteCommandIfExists(client, e.ChatMessage.Channel, userName, message);
+                if(handled){
+                    break;
                 }
             }
         }
@@ -116,26 +87,6 @@ namespace Twitchbot.Bot
                 client.SendMessage(e.Channel, $"Welcome {e.Subscriber.DisplayName} to the substers! You just earned 500 points! So kind of you to use your Twitch Prime on this channel!");
             else
                 client.SendMessage(e.Channel, $"Welcome {e.Subscriber.DisplayName} to the substers! You just earned 500 points!");
-        }
-
-        private void RollDice(string channel, string username){
-            RNGCryptoServiceProvider provider = new RNGCryptoServiceProvider();
-            var byteArray = new byte[4];
-            provider.GetBytes(byteArray);
-
-            //convert 4 bytes to an integer
-            var randomInteger = BitConverter.ToUInt32(byteArray, 0);
-            var diceValue = (randomInteger % 6) + 1;
-            client.SendMessage(channel, $"{username} roll is a {diceValue}");
-        }
-
-        private void EndBlackJack(BlackJack game, string userName, string channel){
-            var playerHand = game.GetHand(true);
-            var dealerHand = game.GetHand(false);
-            var gameMessage = game.ScoreGame() ? $"{userName} Win" : $"{userName} Lose";
-            blackJackGames.Remove(userName);
-            client.SendMessage(channel, $"{gameMessage} - {userName} Hand : {playerHand.ToString()}, Dealer's Hand : {dealerHand.ToString()}.  Enter !blackjack to play again");
-
         }
     }
 }

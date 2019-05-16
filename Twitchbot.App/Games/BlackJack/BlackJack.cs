@@ -10,10 +10,13 @@ namespace Twitchbot.Games.BlackJack{
         private Hand dealerHand;
         private Hand playerHand; 
 
-        public BlackJack(){
+        private IRandomNumberGenerator generator;
+
+        public BlackJack(IRandomNumberGenerator randomGenerator){
             deck = new Hand();
             dealerHand = new Hand();
             playerHand = new Hand();
+            generator = randomGenerator;
         }
 
         public void NewGame(){
@@ -83,7 +86,7 @@ namespace Twitchbot.Games.BlackJack{
         }
 
         private bool DealCard(bool isPlayer){
-            var index = RandomNumber.RandomInteger(deck.cards.Count);
+            var index = generator.RandomNumber(deck.cards.Count);
             var card = deck.cards[index];
             deck.cards.Remove(card);
             if(isPlayer){

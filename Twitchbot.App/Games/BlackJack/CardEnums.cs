@@ -12,9 +12,9 @@ namespace Twitchbot.Games.BlackJack
         Eight = 8,
         Nine = 9,
         Ten = 10,
-        Jack = 10,
-        Queen = 10,
-        King = 10
+        Jack = 11,
+        Queen = 12,
+        King = 13
     }
 
     public enum CardSuit
