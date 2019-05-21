@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
 using Twitchbot.Games.BlackJack;
+using Twitchbot.Games.Trivia;
 using Twitchbot.Games.Helpers;
 
 namespace Twitchbot.Bot
@@ -37,6 +38,7 @@ namespace Twitchbot.Bot
             //add modules the crappy way for now
             modules.Add(new BlackJackModule());
             modules.Add(new DiceModule());
+            modules.Add(new TriviaModule());
         }
 
         public void Disconnect(){
