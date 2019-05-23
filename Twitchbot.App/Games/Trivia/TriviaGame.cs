@@ -1,17 +1,28 @@
 using System;
 using Twitchbot.Bot;
 using TwitchLib.Client;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Twitchbot.Games.Helpers;
+using System.Web;
 using System.Text;
 using System.Linq;
 
 namespace Twitchbot.Games.Trivia
 {
-    public class TriviaGame{
-        private Dictionary<string,int> scores;
-        private Dictionary<string,int> currentQuestionResults;
+    public class TriviaGame
+    {
+        private Dictionary<string, int> scores;
+        private Dictionary<string, int> currentQuestionResults;
+
+        private const int time = 30000;
+
+        private Timer timer;
+
+        private TwitchClient client;
+
+        private string channel;
 
         private bool isStarted;
 
@@ -23,25 +34,36 @@ namespace Twitchbot.Games.Trivia
 
         private List<Question> questions;
 
-        public TriviaGame(){
+        public event EventHandler<TriviaEventArgs> RaiseCustomEvent;
+
+        public TriviaGame(TwitchClient client, string channel)
+        {
             scores = new Dictionary<string, int>();
             isStarted = false;
             isStopped = true;
             numOfQuestions = 0;
             questions = new List<Question>();
             currentQuestionResults = new Dictionary<string, int>();
+            this.client = client;
+            this.channel = channel;
         }
 
-        public void StartGame(Question[] questions){
-            this.questions = questions.ToList();
+        public void StartGame(List<Question> questions)
+        {
+            this.questions = questions;
             scores.Clear();
             currentQuestionResults.Clear();
             isStarted = true;
-            numOfQuestions = questions.Length;
+            numOfQuestions = questions.Count;
+            var output = NextQuestion();
+            OnRaiseTriviaEvent(new TriviaEventArgs(client, channel, HttpUtility.HtmlDecode(output)));
+            timer = new Timer(TimerTask, null, time, time);
         }
 
-        public string NextQuestion(){
-            if(questions.Count == 0){
+        public string NextQuestion()
+        {
+            if (questions.Count == 0)
+            {
                 return null;
             }
             var next = questions.First();
@@ -52,12 +74,13 @@ namespace Twitchbot.Games.Trivia
             var questionNumber = numOfQuestions - questions.Count;
 
             var sb = new StringBuilder();
-            sb.Append($"Question {questionNumber}:    "+
-                currentQuestion.question+"           "); 
-            
-            for(var i = 0; i < currentQuestion.answers.Count; i++){
+            sb.Append($"Question {questionNumber}:    " +
+                currentQuestion.question + "           ");
+
+            for (var i = 0; i < currentQuestion.answers.Count; i++)
+            {
                 sb.Append($"{ConvertAnswerToDisplay(Char.ToString((char)(i + 97)))}. ");
-                sb.Append(currentQuestion.answers[i] +"      ");
+                sb.Append(currentQuestion.answers[i] + "      ");
             }
 
             isStopped = false;
@@ -65,112 +88,184 @@ namespace Twitchbot.Games.Trivia
             return sb.ToString();
         }
 
-        public void UserAnswer(string user, string answer){
-            if(isStopped){
+        public void UserAnswer(string user, string answer)
+        {
+            if (isStopped)
+            {
                 return;
             }
-            if(currentQuestionResults.ContainsKey(user)){
+            if (currentQuestionResults.ContainsKey(user))
+            {
                 // user already answered
-            }else{
+            }
+            else
+            {
                 var score = 0;
-                if(answer == currentQuestion.correctAnswerLetter){
+                if (answer == currentQuestion.correctAnswerLetter)
+                {
                     score++;
                 }
                 currentQuestionResults.Add(user, score);
             }
         }
 
-        public bool isGameStarted(){
+        public bool isGameStarted()
+        {
             return isStarted;
         }
 
-        public bool isFinished(){
+        public bool isFinished()
+        {
             return questions.Count == 0;
         }
 
-        public void StopCurrentQuestion(){
+        public void StopCurrentQuestion()
+        {
             isStopped = true;
         }
 
-        public List<string> GetQuestionResultAndSave(){
+        public List<string> GetQuestionResultAndSave()
+        {
             var results = new List<string>();
-            results.Add($"The correct answer was {ConvertAnswerToDisplay(currentQuestion.correctAnswerLetter)}    "+
+            results.Add($"The correct answer was {ConvertAnswerToDisplay(currentQuestion.correctAnswerLetter)}    " +
                 "The following users got one point:");
-            
-            var sb = new StringBuilder();
-            foreach(var kvp in currentQuestionResults){
-                if(kvp.Value == 1){
-                    //save correct score
-                    if(scores.ContainsKey(kvp.Key)){
-                        scores[kvp.Key]++;
-                    }else{
-                        scores.Add(kvp.Key, 1);
-                    }
 
+            var sb = new StringBuilder();
+            foreach (var kvp in currentQuestionResults)
+            {
+                var points = kvp.Value;
+                //save correct score
+                if (scores.ContainsKey(kvp.Key))
+                {
+                    scores[kvp.Key] += points;
+                }
+                else
+                {
+                    scores.Add(kvp.Key, points);
+                }
+
+                if (points == 1)
+                {
                     //add to string
                     sb.Append(kvp.Key + " ");
                 }
             }
+            currentQuestionResults.Clear();
             results.Add(sb.ToString());
             return results;
         }
 
-        public List<string> GetTotalScore(){
+        public List<string> GetTotalScore()
+        {
             var results = new List<string>();
             results.Add($"The total score is: ");
-            
-            var sortedDict = from entry in scores orderby entry.Value ascending select entry;
+
+            var sortedDict = from entry in scores orderby entry.Value descending select entry;
 
             var sb = new StringBuilder();
-            foreach(var kvp in sortedDict){
-                if(kvp.Value == 1){
-                    //add to string
-                    sb.Append(kvp.Key + " has "+ kvp.Value + " points,  ");
+            foreach (var kvp in sortedDict)
+            {
+                var pointString = "point";
+                if(kvp.Value > 1 || kvp.Value == 0){
+                    pointString = pointString + "s";
                 }
+                //add to string
+                sb.Append($"{kvp.Key} has {kvp.Value} {pointString},  ");
             }
-            results.Add(sb.ToString());
+            results.Add(sb.ToString().TrimEnd(", ".ToCharArray()));
             isStarted = false;
             return results;
         }
 
-        private QuestionMultipleChoice ConvertQuestion(Question question){
+        protected virtual void OnRaiseTriviaEvent(TriviaEventArgs e)
+        {
+            // Make a temporary copy of the event to avoid possibility of
+            // a race condition if the last subscriber unsubscribes
+            // immediately after the null check and before the event is raised.
+            EventHandler<TriviaEventArgs> handler = RaiseCustomEvent;
+
+            // Event will be null if there are no subscribers
+            if (handler != null)
+            {
+                // Use the () operator to raise the event.
+                handler(this, e);
+            }
+        }
+
+        private QuestionMultipleChoice ConvertQuestion(Question question)
+        {
             var result = new QuestionMultipleChoice();
 
             var random = new NumberGenerator();
             var value = random.RandomNumber(4);
+            string[] otherAnswers = question.incorrect_answers;
 
             result.correctAnswerLetter = Char.ToString((char)(value + 97));
             result.question = question.question;
+
+            //randomize incorrect answers
+            for (var i = question.incorrect_answers.Length - 1; i > 0; i--)
+            {
+                var answerIndex = random.RandomNumber(i + 1);
+                var temp = otherAnswers[answerIndex];
+                otherAnswers[answerIndex] = otherAnswers[i];
+                otherAnswers[i] = temp;
+            }
+
             var adjustment = 0;
-            for(var i = 0; i <= question.incorrect_answers.Length; i++){
-                if(i == value){
+            for (var i = 0; i <= question.incorrect_answers.Length; i++)
+            {
+                if (i == value)
+                {
                     result.answers.Add(question.correct_answer);
                     adjustment = 1;
-                }else{
-                    result.answers.Add(question.incorrect_answers[i - adjustment]);
+                }
+                else
+                {
+                    result.answers.Add(otherAnswers[i - adjustment]);
                 }
             }
 
             return result;
         }
 
-        private string ConvertAnswerToDisplay(string answer){
+        private string ConvertAnswerToDisplay(string answer)
+        {
             var unicode = "";
-            switch(answer){
+            switch (answer)
+            {
                 case "a":
-                    unicode = "\U0001F1E6";
+                    unicode = "\U0001F170";
                     break;
                 case "b":
-                    unicode = "\U0001F1E7";
+                    unicode = "\U0001F171";
                     break;
                 case "c":
-                    unicode = "\U0001F1E8";
+                    unicode = "\U0001F172";
                     break;
                 case "d":
-                    unicode = "\U0001F1E9";
+                    unicode = "\U0001F173";
                     break;
             }
             return unicode;
+        }
+
+        private void TimerTask(object timerState)
+        {
+            StopCurrentQuestion();
+            var output = GetQuestionResultAndSave();
+            output.ForEach(message => 
+                OnRaiseTriviaEvent(new TriviaEventArgs(client, channel, HttpUtility.HtmlDecode(message))));
+            if(!isFinished()){
+                var next = NextQuestion();
+                OnRaiseTriviaEvent(new TriviaEventArgs(client, channel, HttpUtility.HtmlDecode(next)));
+            }else{
+                var final = GetTotalScore();
+                final.ForEach(message => 
+                    OnRaiseTriviaEvent(new TriviaEventArgs(client, channel, HttpUtility.HtmlDecode(message))));
+                timer?.Change(Timeout.Infinite, 0);
+                timer.Dispose();
+            }
         }
     }
 }
