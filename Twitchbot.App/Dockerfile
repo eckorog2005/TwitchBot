@@ -3,4 +3,4 @@ COPY bin/Release/netcoreapp2.2/publish app/
 
 WORKDIR /app
 
-ENTRYPOINT ["dotnet", "twitchbot.dll"]
+ENTRYPOINT ["dotnet", "Twitchbot.App.dll"]
