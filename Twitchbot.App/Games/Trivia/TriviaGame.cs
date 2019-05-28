@@ -79,7 +79,7 @@ namespace Twitchbot.Games.Trivia
 
             for (var i = 0; i < currentQuestion.answers.Count; i++)
             {
-                sb.Append($"{ConvertAnswerToDisplay(Char.ToString((char)(i + 97)))}. ");
+                sb.Append($"{ConvertAnswerToDisplay(Char.ToString((char)(i + 97)))} ");
                 sb.Append(currentQuestion.answers[i] + "      ");
             }
 
@@ -127,10 +127,8 @@ namespace Twitchbot.Games.Trivia
         public List<string> GetQuestionResultAndSave()
         {
             var results = new List<string>();
-            results.Add($"The correct answer was {ConvertAnswerToDisplay(currentQuestion.correctAnswerLetter)}    " +
-                "The following users got one point:");
+            var correctCount = 0;
 
-            var sb = new StringBuilder();
             foreach (var kvp in currentQuestionResults)
             {
                 var points = kvp.Value;
@@ -146,21 +144,23 @@ namespace Twitchbot.Games.Trivia
 
                 if (points == 1)
                 {
-                    //add to string
-                    sb.Append(kvp.Key + " ");
+                    correctCount++;
                 }
             }
+
+            results.Add($"The correct answer was {ConvertAnswerToDisplay(currentQuestion.correctAnswerLetter)} | " +
+                $"{correctCount} user(s) got the question correct.");
+
             currentQuestionResults.Clear();
-            results.Add(sb.ToString());
             return results;
         }
 
         public List<string> GetTotalScore()
         {
             var results = new List<string>();
-            results.Add($"The total score is: ");
+            results.Add($"Top 10 final socres: ");
 
-            var sortedDict = from entry in scores orderby entry.Value descending select entry;
+            var sortedDict = (from entry in scores orderby entry.Value descending select entry).Take(10);
 
             var sb = new StringBuilder();
             foreach (var kvp in sortedDict)
