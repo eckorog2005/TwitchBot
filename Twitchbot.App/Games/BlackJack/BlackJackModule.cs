@@ -4,6 +4,7 @@ using TwitchLib.Client;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Twitchbot.Games.Helpers;
+using TwitchLib.Client.Interfaces;
 
 namespace Twitchbot.Games.BlackJack
 {
@@ -15,7 +16,12 @@ namespace Twitchbot.Games.BlackJack
             blackJackGames = new Dictionary<string, BlackJack>();
         }
         
-        public async Task<bool> ExecuteCommandIfExists(TwitchClient client, string channel, string userName, string command){
+        public async Task<bool> ExecuteCommandIfExists(ITwitchClient client, string channel, string userName, string command){
+            if (client == null)
+            {
+                throw new ArgumentNullException(nameof(client));
+            }
+
             var handled = false;
             
             //Blackjack game
@@ -61,7 +67,7 @@ namespace Twitchbot.Games.BlackJack
             return handled;
         }
 
-        private void EndBlackJack(TwitchClient client, BlackJack game, string userName, string channel){
+        private void EndBlackJack(ITwitchClient client, BlackJack game, string userName, string channel){
             var playerHand = game.GetHand(true);
             var dealerHand = game.GetHand(false);
             var gameMessage = game.ScoreGame() ? $"{userName} Win" : $"{userName} Lose";

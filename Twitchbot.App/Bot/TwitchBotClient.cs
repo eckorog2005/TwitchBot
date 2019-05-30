@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using Twitchbot.Games.BlackJack;
 using Twitchbot.Games.Trivia;
 using Twitchbot.Games.Helpers;
+using Twitchbot.Games.Dice;
 
 namespace Twitchbot.Bot
 {

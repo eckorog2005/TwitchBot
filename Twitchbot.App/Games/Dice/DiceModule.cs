@@ -4,18 +4,18 @@ using TwitchLib.Client;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Twitchbot.Games.Helpers;
+using TwitchLib.Client.Interfaces;
 
-namespace Twitchbot.Games.BlackJack
+namespace Twitchbot.Games.Dice
 {
     public class DiceModule: IBotModule{
 
-        private Dictionary<string,BlackJack> blackJackGames;
+        private int sidesOfDice = 20;
 
         public DiceModule(){
-            blackJackGames = new Dictionary<string, BlackJack>();
         }
         
-        public async Task<bool> ExecuteCommandIfExists(TwitchClient client, string channel, string userName, string command){
+        public async Task<bool> ExecuteCommandIfExists(ITwitchClient client, string channel, string userName, string command){
             var handled = false;
             if(command == "!dice"){
                 RollDice(client, channel, userName);
@@ -24,9 +24,9 @@ namespace Twitchbot.Games.BlackJack
             return handled;
         }
 
-        private void RollDice(TwitchClient client, string channel, string username){
+        private void RollDice(ITwitchClient client, string channel, string username){
             var random = new NumberGenerator();
-            var diceValue = random.RandomNumber(6) + 1;
+            var diceValue = random.RandomNumber(sidesOfDice) + 1;
             client.SendMessage(channel, $"{username} roll is a {diceValue}");
         }
     }

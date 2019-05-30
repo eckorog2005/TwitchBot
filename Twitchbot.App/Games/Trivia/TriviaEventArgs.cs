@@ -1,24 +1,25 @@
 using System;
 using System.Collections.Generic;
 using TwitchLib.Client;
+using TwitchLib.Client.Interfaces;
 
 namespace Twitchbot.Games.Trivia
 {
     // Define a class to hold custom event info
     public class TriviaEventArgs : EventArgs
     {
-        public TriviaEventArgs(TwitchClient client, string channel, string message)
+        public TriviaEventArgs(ITwitchClient client, string channel, string message)
         {
             this.client = client;
             this.channel = channel;
             this.message = message;
         }
-        private TwitchClient client;
+        private ITwitchClient client;
         private string channel;
 
         private string message;
 
-        public TwitchClient Client
+        public ITwitchClient Client
         {
             get { return client; }
             set { client = value; }

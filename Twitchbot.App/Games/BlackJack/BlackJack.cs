@@ -30,7 +30,7 @@ namespace Twitchbot.Games.BlackJack{
             DealCard(false);
         }
 
-        public void resetGame(){
+        public void ResetGame(){
             dealerHand = new Hand();
             playerHand = new Hand();
 
@@ -78,11 +78,6 @@ namespace Twitchbot.Games.BlackJack{
             }else{
                 return dealerHand;
             }
-        }
-
-        public bool PlayerStayed(){
-            DealerTurn();
-            return ScoreGame();
         }
 
         private bool DealCard(bool isPlayer){

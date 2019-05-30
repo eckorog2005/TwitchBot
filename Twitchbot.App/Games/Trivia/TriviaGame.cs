@@ -8,6 +8,7 @@ using Twitchbot.Games.Helpers;
 using System.Web;
 using System.Text;
 using System.Linq;
+using TwitchLib.Client.Interfaces;
 
 namespace Twitchbot.Games.Trivia
 {
@@ -20,7 +21,7 @@ namespace Twitchbot.Games.Trivia
 
         private Timer timer;
 
-        private TwitchClient client;
+        private ITwitchClient client;
 
         private string channel;
 
@@ -36,7 +37,7 @@ namespace Twitchbot.Games.Trivia
 
         public event EventHandler<TriviaEventArgs> RaiseCustomEvent;
 
-        public TriviaGame(TwitchClient client, string channel)
+        public TriviaGame(ITwitchClient client, string channel)
         {
             scores = new Dictionary<string, int>();
             isStarted = false;

@@ -10,6 +10,7 @@ using Twitchbot.Games.Helpers;
 using System.Web;
 using System.Linq;
 using System.Text.RegularExpressions;
+using TwitchLib.Client.Interfaces;
 
 namespace Twitchbot.Games.Trivia
 {
@@ -24,7 +25,7 @@ namespace Twitchbot.Games.Trivia
             rx = new Regex(@"^!([abcd])$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
         
-        public async Task<bool> ExecuteCommandIfExists(TwitchClient client, string channel, string userName, string command){
+        public async Task<bool> ExecuteCommandIfExists(ITwitchClient client, string channel, string userName, string command){
             var handled = false;
 
             //find the channel's trivia game
