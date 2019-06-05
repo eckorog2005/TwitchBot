@@ -7,6 +7,7 @@ using TwitchLib.Client.Models;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Twitchbot.Bot
 {
@@ -16,12 +17,12 @@ namespace Twitchbot.Bot
         private TwitchBotClient client;
         private ConnectionCredentials credentials;
 
-        public TwitchBot(IConfiguration iConfig)
+        public TwitchBot(IConfiguration iConfig, IHttpClientFactory httpFactory)
         {
             var botName = iConfig.GetValue<string>("username");
             var token = iConfig.GetValue<string>("accessToken");
             credentials = new ConnectionCredentials(botName, token);
-            client = new TwitchBotClient(credentials);
+            client = new TwitchBotClient(credentials, httpFactory);
         }
 
         public void JoinChannel(string userName){

@@ -17,12 +17,13 @@ namespace Twitchbot.Games.Trivia
     public class TriviaModule: IBotModule{
 
         private Dictionary<string,TriviaGame> games;
-
+        private TriviaService service;
         private Regex rx;
 
-        public TriviaModule(){
+        public TriviaModule(IHttpClientFactory httpClientFactory){
             games = new Dictionary<string,TriviaGame>();
             rx = new Regex(@"^!([abcd])$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            service = new TriviaService(httpClientFactory);
         }
         
         public async Task<bool> ExecuteCommandIfExists(ITwitchClient client, string channel, string userName, string command){
@@ -85,23 +86,15 @@ namespace Twitchbot.Games.Trivia
 
         private async Task<List<Question>> GetQuestions(int number){
             var resultQuestions = new List<Question>();
-            var clientHTTP = new HttpClient();
             var random = new NumberGenerator();
             var value = random.RandomNumber(number);
-            QuestionResults questionsResults;
-            HttpResponseMessage response = await clientHTTP.GetAsync($"https://opentdb.com/api.php?amount={value}&category=15&type=multiple");
-            if (response.IsSuccessStatusCode)
-            {
-                questionsResults = await response.Content.ReadAsAsync<QuestionResults>();
-                questionsResults.results.ToList().ForEach(question => resultQuestions.Add(question));
-            }
+            
+            resultQuestions.AddRange(await service.GetTriviaQuestions(value, TriviaCategoryEnum.VIDEO_GAMES));
+
             value = number - value;
-            response = await clientHTTP.GetAsync($"https://opentdb.com/api.php?amount={value}&category=31&type=multiple");
-            if (response.IsSuccessStatusCode)
-            {
-                questionsResults = await response.Content.ReadAsAsync<QuestionResults>();
-                questionsResults.results.ToList().ForEach(question => resultQuestions.Add(question));
-            }
+
+            resultQuestions.AddRange(await service.GetTriviaQuestions(value, TriviaCategoryEnum.ANIME_MANGA));
+            
             return resultQuestions;
         }
     }

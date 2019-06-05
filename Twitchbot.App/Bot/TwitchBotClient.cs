@@ -11,6 +11,7 @@ using Twitchbot.Games.BlackJack;
 using Twitchbot.Games.Trivia;
 using Twitchbot.Games.Helpers;
 using Twitchbot.Games.Dice;
+using System.Net.Http;
 
 namespace Twitchbot.Bot
 {
@@ -21,7 +22,7 @@ namespace Twitchbot.Bot
 
         private List<IBotModule> modules;
 
-        public TwitchBotClient(ConnectionCredentials credentials)
+        public TwitchBotClient(ConnectionCredentials credentials, IHttpClientFactory httpFactory)
         {
             client = new TwitchClient();
             client.Initialize(credentials);
@@ -39,7 +40,7 @@ namespace Twitchbot.Bot
             //add modules the crappy way for now
             modules.Add(new BlackJackModule());
             modules.Add(new DiceModule());
-            modules.Add(new TriviaModule());
+            modules.Add(new TriviaModule(httpFactory));
         }
 
         public void Disconnect(){

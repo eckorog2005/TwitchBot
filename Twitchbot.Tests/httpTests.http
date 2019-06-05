@@ -1,4 +1,4 @@
-@hostname = http://localhost:5001
+@hostname = https://localhost:5001
 
 GET {{hostname}}/api/twitchbot HTTP/1.1
 
