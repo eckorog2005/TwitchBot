@@ -52,6 +52,8 @@ namespace Twitchbot.Games.Trivia
                     }
                     if(number > 0 && number <= 5){
                         questions = await GetQuestions(number);
+                    }else{
+                        client.SendMessage(channel, $"{userName} Trivia start format is: !trivia [1-5]");
                     }
                 }else{
                     client.SendMessage(channel, $"{userName} Trivia start format is: !trivia [1-5]");

@@ -17,7 +17,7 @@ namespace Twitchbot.Games.Dice
         
         public async Task<bool> ExecuteCommandIfExists(ITwitchClient client, string channel, string userName, string command){
             var handled = false;
-            if(command == "!dice"){
+            if(command == "!roll"){
                 RollDice(client, channel, userName);
                 handled = true;
             }

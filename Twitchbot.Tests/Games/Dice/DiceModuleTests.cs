@@ -21,7 +21,7 @@ namespace Twitchbot.Tests.Games.Dice
             var module = new DiceModule();
             var twitchclient = new Mock<ITwitchClient>();
             twitchclient.Setup(client => client.SendMessage(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
-            var handled = await module.ExecuteCommandIfExists(twitchclient.Object, "test", "testUser", "!dice");
+            var handled = await module.ExecuteCommandIfExists(twitchclient.Object, "test", "testUser", "!roll");
             Assert.True(handled);
         }
 
