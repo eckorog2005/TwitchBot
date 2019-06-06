@@ -3,12 +3,12 @@ using System.Collections.Generic;
 namespace Twitchbot.Games.Trivia
 {
     public class QuestionMultipleChoice{
-        public string question;
-        public string correctAnswerLetter;
-        public List<string> answers;
+        public string Question;
+        public string CorrectAnswerLetter;
+        public List<string> Answers;
 
         public QuestionMultipleChoice(){
-            answers = new List<string>();
+            Answers = new List<string>();
         }
     }
 }

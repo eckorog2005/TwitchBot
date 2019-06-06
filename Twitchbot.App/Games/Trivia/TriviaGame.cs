@@ -76,12 +76,12 @@ namespace Twitchbot.Games.Trivia
 
             var sb = new StringBuilder();
             sb.Append($"Question {questionNumber}:    " +
-                currentQuestion.question + "           ");
+                currentQuestion.Question + "           ");
 
-            for (var i = 0; i < currentQuestion.answers.Count; i++)
+            for (var i = 0; i < currentQuestion.Answers.Count; i++)
             {
                 sb.Append($"{ConvertAnswerToDisplay(Char.ToString((char)(i + 97)))} ");
-                sb.Append(currentQuestion.answers[i] + "      ");
+                sb.Append(currentQuestion.Answers[i] + "      ");
             }
 
             isStopped = false;
@@ -102,7 +102,7 @@ namespace Twitchbot.Games.Trivia
             else
             {
                 var score = 0;
-                if (answer == currentQuestion.correctAnswerLetter)
+                if (answer == currentQuestion.CorrectAnswerLetter)
                 {
                     score++;
                 }
@@ -149,7 +149,7 @@ namespace Twitchbot.Games.Trivia
                 }
             }
 
-            results.Add($"The correct answer was {ConvertAnswerToDisplay(currentQuestion.correctAnswerLetter)} | " +
+            results.Add($"The correct answer was {ConvertAnswerToDisplay(currentQuestion.CorrectAnswerLetter)} | " +
                 $"{correctCount} user(s) got the question correct.");
 
             currentQuestionResults.Clear();
@@ -195,14 +195,15 @@ namespace Twitchbot.Games.Trivia
 
         private QuestionMultipleChoice ConvertQuestion(Question question)
         {
-            var result = new QuestionMultipleChoice();
+            var result = new QuestionMultipleChoice{
+                Question = question.question
+            };
 
             var random = new NumberGenerator();
             var value = random.RandomNumber(4);
             string[] otherAnswers = question.incorrect_answers;
 
-            result.correctAnswerLetter = Char.ToString((char)(value + 97));
-            result.question = question.question;
+            result.CorrectAnswerLetter = Char.ToString((char)(value + 97));
 
             //randomize incorrect answers
             for (var i = question.incorrect_answers.Length - 1; i > 0; i--)
@@ -218,12 +219,12 @@ namespace Twitchbot.Games.Trivia
             {
                 if (i == value)
                 {
-                    result.answers.Add(question.correct_answer);
+                    result.Answers.Add(question.correct_answer);
                     adjustment = 1;
                 }
                 else
                 {
-                    result.answers.Add(otherAnswers[i - adjustment]);
+                    result.Answers.Add(otherAnswers[i - adjustment]);
                 }
             }
 

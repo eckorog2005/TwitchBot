@@ -21,7 +21,9 @@ namespace Twitchbot.Games.Trivia
             if (response.IsSuccessStatusCode)
             {
                 QuestionResults questionsResults = await response.Content.ReadAsAsync<QuestionResults>();
-                questionsResults.results.ToList().ForEach(question => results.Add(question));
+                if(questionsResults.response_code == 0){
+                    questionsResults.results.ToList().ForEach(question => results.Add(question));
+                }
             }
 
             return results;
